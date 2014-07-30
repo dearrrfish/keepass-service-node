@@ -1,0 +1,18 @@
+{
+    "app" : {
+        "port" : 1957,
+        "env"  : "development"
+    },
+    "cache" : {
+        "file" : "[[HOME]]/.ksapi-cache"
+    },
+    "kdb": {
+        "name": "Test KDB",
+        "file": "[[HOME]]/Dropbox/root/credentials/personal-mango.kdbx",
+        "password": "momo88415"
+    },
+    "query": {
+        "titleOnly" : false,
+        "fields" : ["Title", "GroupName", "URL"]
+    }
+}
