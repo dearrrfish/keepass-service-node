@@ -9,6 +9,7 @@ var express = require('express'),
     favicon      = require('static-favicon'),
     cookieParser = require('cookie-parser'),
     bodyParser   = require('body-parser'),
+    Cache = require('./modules/cache'),
     utils        = require('./modules/utils');
 
 var config   = {};  // Default config object
@@ -40,12 +41,10 @@ function init(app)
     }
 
     // merge settings
-    utils.merge(config, user_config);
-
+    config = utils.merge(config, user_config);
     // replace some env marks with values
     utils.replace(config, "[[HOME]]", process.env.HOME);
 
-    console.log(config);
     // save settings in app
     app.set('config', config);
 
@@ -53,6 +52,16 @@ function init(app)
     app.set('port', config.app.port);
 
     app.set('env', config.app.env);
+
+    console.log(app.get('config'));
+    // cache setup
+    var cache = Cache(app);
+    cache.update().then(function (res) {
+        app.set('cache', cache);
+        log('cache initialized.');
+    }, function (res) {
+        log(res.errors[0].message);
+    });
 
     // view engine setup
     app.set('views', path.join(__dirname, 'views'));

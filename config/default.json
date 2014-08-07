@@ -1,12 +1,9 @@
 {
     "app": {
-        "port": 8443
-    },
-    "cache": {
-        "file": "[[HOME]]/.alfred-keepass-cache"
+        "port": 3000
     },
     "query": {
         "titleOnly" : true,
-        "fields" : ["Title", "GroupName", "URL"]
+        "fields" : ["title", "group", "url"]
     }
 }

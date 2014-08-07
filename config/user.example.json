@@ -1,18 +1,20 @@
 {
     "app" : {
-        "port" : 1957,
+        "port" : 8443,
         "env"  : "development"
     },
-    "cache" : {
-        "file" : "[[HOME]]/.ksapi-cache"
+    "cache": {
+        "enabled" : true
     },
     "kdb": {
         "name": "Test KDB",
-        "file": "[[HOME]]/Dropbox/root/credentials/personal-mango.kdbx",
-        "password": "momo88415"
+        "file": "[[HOME]]/path/to/your/keepass/database",
+        "password": "your_password",
+        "keyfile": "[[HOME]]/path/to/your/keyfile"
+        "cache": "[[HOME]]/.ksapi-cache"
     },
     "query": {
         "titleOnly" : false,
-        "fields" : ["Title", "GroupName", "URL"]
+        "fields" : ["title", "group" ,"path", "url"]
     }
 }
