@@ -2,14 +2,14 @@
 /*
  * Module Dependencies
  */
-var express = require('express'),
+var express      = require('express'),
     log          = require('debug')('ksapi:init'),
     logger       = require('morgan'),
     path         = require('path'),
     favicon      = require('static-favicon'),
     cookieParser = require('cookie-parser'),
     bodyParser   = require('body-parser'),
-    Cache = require('./modules/cache'),
+    Cache        = require('./modules/cache'),
     utils        = require('./modules/utils');
 
 var config   = {};  // Default config object

@@ -1,7 +1,8 @@
 /**
  * Dependencies
  */
-var errors = require('./errors');
+var crypto = require('crypto'),
+    errors = require('./errors');
 
 var fields = {
     title     : "Title",
@@ -83,6 +84,7 @@ exports.queries = function (qs) {
  */
 exports.errs = function errs(err, _errs)
 {
+    if (typeof err !== 'undefined' && !(err in errors.code)) { err = errors.code['UNKNOWN_ERROR']; }
     var errs = (typeof err !== 'undefined')
              ? [{ code: errors.code[err], message: errors.message[errors.code[err]] }] : [];
 
@@ -200,4 +202,60 @@ exports.pushInObject = function pushInObject(item, arr, object) {
     if (!exports.is_array(object[arr])) { return false; }
     object[arr].push(item);
     return true;
+}
+
+/*
+ * is defined
+ */
+exports.defined = function (vs) {
+    if (exports.is_array(vs)) {
+        return vs.every(function (v) {
+            return (typeof v !== 'undefined');
+        });
+    }
+    else {
+        return (typeof vs !== 'undefined');
+    }
+}
+
+/*
+ * Hash
+ */
+exports.hash = function (source, algo) {
+    if (!exports.defined([source. algo])) { return false; }
+    var hash = crypto.createHash(algo);
+    hash.update(source);
+    var hashed = hash.digest('hex');
+    return hashed;
+}
+
+/*
+ * Crypt and decrypt
+ */
+// get secret: process.env > app > config
+exports.secret = function (app) {
+    if (typeof process.env.KSAPI_SECRET !== 'undefined') {
+        return process.env.KSAPI_SECRET;
+    }
+    else if (typeof app !== 'undefined') {
+        return app.get('config').security.default_secret;
+    }
+    return false;
+}
+
+
+exports.crypt = function (plain, algo, secret) {
+    if (!exports.defined([plain, algo, secret]) || !secret) { return false; }
+    var cipher = crypto.createCipher(algo, secret);
+    var crypted = cipher.update(plain, 'utf-8', 'hex');
+    crypted += cipher.final('hex');
+    return crypted;
+}
+
+exports.decrypt = function (crypted, algo, secret) {
+    if (!exports.defined([crypted, algo, secret]) || !secret) { return false; }
+    var decipher = crypto.createDecipher(algo, secret);
+    var decrypted = decipher.update(crypted, 'hex', 'utf-8');
+    decrypted += decipher.final('utf-8');
+    return decrypted;
 }

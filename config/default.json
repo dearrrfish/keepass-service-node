@@ -2,6 +2,15 @@
     "app": {
         "port": 3000
     },
+    "security" : {
+        "default_secret" : "186661e54bd6a8e198d9f0966466c5a5",
+        "crypto" : {
+            "algorithm" : "aes-256-cbc"
+        },
+        "hash" : {
+            "algorithm" : "sha1"
+        }
+    },
     "query": {
         "titleOnly" : true,
         "fields" : ["title", "group", "url"]

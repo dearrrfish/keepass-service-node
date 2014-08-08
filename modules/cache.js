@@ -136,7 +136,6 @@ function Cache(app) {
                     }
                 });
                 if (score > 0) {
-                    log('found matched entry \'%s\'', e.name);
                     results.push({entry: e, score: score});
                 }
             }
@@ -147,6 +146,29 @@ function Cache(app) {
             deferred.reject(utils.res(false, 'SEARCH_ERROR'));
         });
 
+        // return search promise
+        return deferred.promise;
+    }
+
+    /**
+     * Retrieve password
+     *
+     * @param {string} uuid - UUID of entry
+     * @return {q.Promise}
+     */
+    cache.getPassword = function (uuid) {
+        var deferred = q.defer();
+        cache.load().then(function (res) {
+            var passwords = res.data.passwords;
+            if (uuid in passwords) {
+                deferred.resolve(utils.res(true, passwords[uuid]));
+            }
+            else {
+                deferred.reject(utils.res(false, 'GET_PASSWORD_FAILED'));
+            }
+        });
+
+        // return password prmoise
         return deferred.promise;
     }
 
@@ -250,6 +272,7 @@ function listKdb (raw)
                 // loop entries
                 entries.forEach(function (e, ei) {
                     var estr = utils.translateEntryString(e.String);
+                    // store entry listing
                     _entries[e.UUID] = {
                         uuid     : e.UUID,
                         title    : estr.Title,
@@ -258,6 +281,9 @@ function listKdb (raw)
                         notes    : estr.Notes,
                         guuid    : g.UUID
                     };
+
+                    // store password
+                    _passwords[e.UUID] = estr.Password;
 
                     // store entry uuid in group.entries
                     _groups[g.UUID].entries.push(e.UUID);
