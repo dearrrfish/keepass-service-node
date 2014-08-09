@@ -28,15 +28,19 @@ exports.weights = {
  *
  *
  * param {string} qs - query string
+ * param {string} qfs - available query fields
  * return {object} queries - array of query objects
  */
-exports.queries = function (qs) {
+exports.queries = function (qs, qfs) {
     var arr = {};
     qs.split(/\s+/).forEach(function (q) {
         if (q === '') { return; }
         var colonIndex = q.indexOf(':');
-        // default to search in title
-        if (colonIndex < 0 || q.slice(0, colonIndex) === '') { exports.pushInObject(q, 'title', arr); return; }
+        // default to search in all available fields
+        if (colonIndex <= 0) {
+            exports.pushInObject(q, 'all', arr);
+            return;
+        }
 
         var field = q.slice(0,colonIndex),
             content = q.slice(colonIndex +1);
@@ -45,7 +49,6 @@ exports.queries = function (qs) {
         if (content === '') { return; }
 
         switch(field.toLowerCase()) {
-            case '':
             case 'title':
             case 't':
                 exports.pushInObject(content, 'title', arr);
@@ -185,7 +188,6 @@ exports.merge = function merge(a, b)
  */
 exports.has = Object.prototype.hasOwnProperty;
 
-
 /*
  * isArray()
  */
@@ -258,4 +260,12 @@ exports.decrypt = function (crypted, algo, secret) {
     var decrypted = decipher.update(crypted, 'hex', 'utf-8');
     decrypted += decipher.final('utf-8');
     return decrypted;
+}
+
+
+/**
+ * sort functions
+ */
+exports.compareScore = function compareScore(a, b) {
+    return b.score - a.score;
 }

@@ -18,17 +18,10 @@ init(app);
  * Routes setups
  */
 // api routes
-var apis = require('./api/index')(app);
-
-// web routes
-var routes = require('./routes/index');
-var users = require('./routes/users');
+var api = require('./api/index')(app);
 
 // apply routes
-app.use('/', routes);
-app.use('/users', users);
-
-app.use('/api', apis);
+app.use('/api', api);
 
 /*
  * Error handlers

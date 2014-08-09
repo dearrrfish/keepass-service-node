@@ -2,64 +2,26 @@
 /*
  * Module Dependencies
  */
-var log = require('debug')('ksapi:api');
-var express = require('express');
-var db = require('../modules/cache');
-var utils = require('../modules/utils');
+var log    = require('debug')('ksapi:api'),
+    router = require('../modules/router'),
+    utils  = require('../modules/utils');
 
 /*
  * Factory of API router
  */
 function API(app)
 {
-    var api = express.Router();
-
-    /**
-     *  Parameters
-     */
-
-    api.param(function(name, fn){
-    if (fn instanceof RegExp) {
-        return function(req, res, next, val) {
-            var captures;
-            if (captures = fn.exec(String(val))) {
-                req.params[name] = captures[0];
-                next();
-            }
-            else {
-                next('route');
-            }
-        }
-    }
-});
-
-    // user-secret
-    api.param('secret', /^[0-9a-fA-F]+$/);
-
-    // query string
-    api.param('search', function (req, res, next, encoded) {
-        var decoded = decodeURIComponent(encoded.replace(/\+/g, ' '));
-        var queries = utils.queries(decoded);
-        req.queries = queries;
-        req.encoded = encoded;
-        req.decoded = decoded;
-        next();
-    });
-
-    // uuid (password, entry, group)
-    api.param('uuid', function (req, res, next, encoded) {
-        var decoded = decodeURIComponent(encoded.replace(/\+/g, ' '));
-        req.encoded = encoded;
-        req.decoded = decoded;
-        next();
-    });
-
-
+    var api = router(app);
     /**
      * Routers
      */
+
+    api.get('/:secret/up', function (req, res) {
+        res.send(req.query);
+    });
+
     // update cache
-    api.get('/cache/update/:secret', function (req, res) {
+    api.get('/:secret/cache/update', function (req, res) {
         // verify secret
         if (req.params.secret !== utils.secret(app)) {
             res.send(utils.res(false, 'INVALID_SECRET'));
@@ -68,7 +30,7 @@ function API(app)
 
         var cache = app.get('cache');
         log('request for reload db cache');
-        cache.update().then(function (r){
+        cache.update(req).then(function (r){
             log('reload db cache successfully');
             res.send(r);
         }, function(r) {
@@ -78,15 +40,15 @@ function API(app)
     });
 
     // search
-    api.get('/search/:secret/:search', function(req, res) {
+    api.get('/:secret/search/:query', function(req, res) {
         // verify secret
         if (req.params.secret !== utils.secret(app)) {
             res.send(utils.res(false, 'INVALID_SECRET'));
             return;
         }
         var cache = app.get('cache');
-        log("search for query: %s", req.decoded);
-        cache.search(req.queries).then(function (r) {
+        log("search for query: %s", req.decodedQuery);
+        cache.search(req).then(function (r) {
             log('found %d results', r.data.length);
             res.send(r);
         }, function (r) {
@@ -97,15 +59,15 @@ function API(app)
 
 
     // retrieve password by uuid
-    api.get('/get/password/:secret/:uuid', function(req, res) {
+    api.get('/:secret/get/password/:uuid', function(req, res) {
         // verify secret
         if (req.params.secret !== utils.secret(app)) {
             res.send(utils.res(false, 'INVALID_SECRET'));
             return;
         }
         var cache = app.get('cache');
-        log("retrieve password by entry uuid (%s)", req.decoded);
-        cache.getPassword(req.decoded).then(function (r) {
+        log("retrieve password by entry uuid (%s)", req.decodedUUID);
+        cache.getPassword(req).then(function (r) {
             log('retrieve password successfully');
             res.send(r);
         }, function (r) {

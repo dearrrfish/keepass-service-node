@@ -53,7 +53,7 @@ function init(app)
 
     app.set('env', config.app.env);
 
-    console.log(app.get('config'));
+    log(app.get('config'));
     // cache setup
     var cache = Cache(app);
     cache.update().then(function (res) {

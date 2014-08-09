@@ -14,7 +14,7 @@
         "cache": "[[HOME]]/.ksapi-cache"
     },
     "query": {
-        "titleOnly" : false,
+        "title_only" : false,
         "fields" : ["title", "group" ,"path", "url"]
     }
 }

@@ -12,7 +12,7 @@
         }
     },
     "query": {
-        "titleOnly" : true,
+        "title_only" : true,
         "fields" : ["title", "group", "url"]
     }
 }

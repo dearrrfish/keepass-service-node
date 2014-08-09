@@ -25,7 +25,7 @@ function Cache(app) {
      *
      * @return {q.promise}
      */
-    cache.update = function () {
+    cache.update = function (req) {
         var deferred = q.defer();
         readKdb(config.kdb).then(function (res) {
             // listing raw data
@@ -87,8 +87,10 @@ function Cache(app) {
      * @param {array} queries - array of query strings
      * @return {q.promise} results - search results
      */
-    cache.search = function (queries) {
-        console.log(queries);
+    cache.search = function (req) {
+        var queries = req.queries;
+        var titleOnly = (utils.defined(req.query.title_only)) ? (req.query.title_only === 'true') : config.query.title_only;
+        console.log(typeof titleOnly);
         var deferred = q.defer();
         var results = [];
         // search targets
@@ -97,7 +99,8 @@ function Cache(app) {
             var entries = res.data.entries,
                 groups = res.data.groups;
 
-            var queryFields = (config.query.titleOnly) ? ['title'] : config.query.fields;
+            var queryFields = titleOnly ? ['title'] : Object.keys(queries);
+            console.log(queryFields);
 
             for (var eid in entries) {
                 var e = entries[eid];
@@ -116,16 +119,31 @@ function Cache(app) {
 
                 queryFields.every(function (qf) {
                     // no query keywords in current field, skip this field
-                    if (!(qf in queries)) { return true; }
+                    //if (!(qf in queries)) { return true; }
 
-                    var qf_matches = 0;
-
+                    var qf_matches;
                     queries[qf].forEach(function (k) {
-                        var content = e[qf];
-                        // matching
-                        if (content.match(new RegExp(k, 'i')) !== null) {
-                            qf_matches += 1;
-                            score += utils.weights[qf];
+                        qf_matches = 0;
+                        // regex object
+                        var regex = new RegExp(k, 'i');
+
+                        // default to search in all available fields
+                        if (qf == 'all') {
+                            config.query.fields.forEach(function (a_qf) {
+                                var a_content = e[a_qf];
+                                if (a_content.match(regex) !== null) {
+                                    qf_matches += 1;
+                                    score += utils.weights[a_qf];
+                                }
+                            });
+                        }
+                        else {
+                            var content = e[qf];
+                            // matching
+                            if (content.match(new RegExp(k, 'i')) !== null) {
+                                qf_matches += 1;
+                                score += utils.weights[qf];
+                            }
                         }
                     });
 
@@ -134,10 +152,15 @@ function Cache(app) {
                         score = 0;  // reset score, so that we can knock out this entry
                         return false;
                     }
+                    return true;
                 });
                 if (score > 0) {
                     results.push({entry: e, score: score});
                 }
+            }
+
+            if (results.length > 1) {
+                results.sort(utils.compareScore);
             }
 
             deferred.resolve(utils.res(true, results));
@@ -156,7 +179,8 @@ function Cache(app) {
      * @param {string} uuid - UUID of entry
      * @return {q.Promise}
      */
-    cache.getPassword = function (uuid) {
+    cache.getPassword = function (req) {
+        var uuid = req.decodedUUID;
         var deferred = q.defer();
         cache.load().then(function (res) {
             var passwords = res.data.passwords;
