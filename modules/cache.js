@@ -89,8 +89,8 @@ function Cache(app) {
      */
     cache.search = function (req) {
         var queries = req.queries;
-        var titleOnly = (utils.defined(req.query.title_only)) ? (req.query.title_only === 'true') : config.query.title_only;
-        console.log(typeof titleOnly);
+        var titleOnly = (utils.defined(req.query.title_only)) ? (req.query.title_only == 'yes') : config.query.title_only;
+        log("title-only search: " + titleOnly);
         var deferred = q.defer();
         var results = [];
         // search targets
@@ -99,8 +99,7 @@ function Cache(app) {
             var entries = res.data.entries,
                 groups = res.data.groups;
 
-            var queryFields = titleOnly ? ['title'] : Object.keys(queries);
-            console.log(queryFields);
+            var queryFields = titleOnly ? ['all', 'title'] : Object.keys(queries);
 
             for (var eid in entries) {
                 var e = entries[eid];
@@ -119,7 +118,7 @@ function Cache(app) {
 
                 queryFields.every(function (qf) {
                     // no query keywords in current field, skip this field
-                    //if (!(qf in queries)) { return true; }
+                    if (!(qf in queries)) { return true; }
 
                     var qf_matches;
                     queries[qf].forEach(function (k) {
@@ -325,8 +324,5 @@ function listKdb (raw)
             }
 
         });
-
     }
-
 }
-                    

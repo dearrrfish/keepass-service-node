@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+// vim: ft=javascript
+
+process.argv.forEach(function (val, index, array) {
+  console.log(index + ': ' + val);
+});
+
+args = process.argv.slice(2);
+var arg = (args.length == 0) ? "start" : args[0];
+console.log(arg);
+var Pm2d = require('./libs/pm2d');
+
+switch(arg) {
+    case 'start':
+        console.log('satrting');
+        start(); break;
+    case 'reload':
+        reload(); break;
+    case 'kill':
+        kill();break;
+    case 'list':
+        list();break;
+    case 'desc':
+        describe(args[1]);break;
+}
+
+function start() {
+    app = {
+        script: "./bin/www",
+        options: {
+            name: "ksapi"
+        }
+    };
+    Pm2d.prototype.connect().then(function (res) {
+        console.log('pm2 connect success');
+        return Pm2d.prototype.start(app);
+    }).then(function (res) {
+        console.log('pm2 start sucess');
+    }).fin(Pm2d.prototype.disconnect);
+}
