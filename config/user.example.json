@@ -1,20 +1,17 @@
 {
     "app" : {
-        "port" : 8443,
+        "port" : 1957,
         "env"  : "development"
     },
-    "cache": {
-        "enabled" : true
-    },
-    "kdb": {
-        "name": "Test KDB",
-        "file": "[[HOME]]/path/to/your/keepass/database",
-        "password": "your_password",
-        "keyfile": "[[HOME]]/path/to/your/keyfile"
-        "cache": "[[HOME]]/.ksapi-cache"
-    },
-    "query": {
-        "title_only" : false,
-        "fields" : ["title", "group" ,"path", "url"]
+    "db" : {
+        "current" : "personal",
+        "personal": {
+            "name": "Personal-KDB",
+            "file": "[[HOME]]/path/to/your/db.kdbx",
+            "password": "******",
+            "cache": true,
+            "title_only" : false,
+            "fields" : ["title", "group", "path", "url"]
+        }
     }
 }

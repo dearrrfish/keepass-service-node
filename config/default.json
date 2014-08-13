@@ -11,8 +11,12 @@
             "algorithm" : "sha1"
         }
     },
-    "query": {
-        "title_only" : true,
-        "fields" : ["title", "group", "url"]
+    "db" : {
+        "current" : "personal",
+        "default_conf" : {
+            "cache" : true,
+            "title_only" : true,
+            "fields" : ["title", "group", "url"]
+        }
     }
 }

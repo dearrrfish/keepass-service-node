@@ -4,15 +4,28 @@
 var crypto = require('crypto'),
     errors = require('./errors');
 
-var fields = {
-    title     : "Title",
-    group     : "Group",
-    path      : "Path",
-    url       : "URL",
-    user      : "UserName",
-    password  : "Password",
-    notes     : "Notes"
+exports.query_fields = {
+    t        : 'title',
+    title    : 'title',
+    g        : 'group',
+    grp      : 'group',
+    group    : 'group',
+    p        : 'path',
+    path     : 'path',
+    l        : 'url',
+    link     : 'url',
+    url      : 'url',
+    a        : 'user',
+    account  : 'user',
+    u        : 'user',
+    user     : 'user',
+    username : 'user',
+    n        : 'notes',
+    note     : 'notes',
+    notes    : 'notes'
 }
+
+exports.err = errors;
 
 exports.weights = {
     title : 3,
@@ -28,57 +41,31 @@ exports.weights = {
  *
  *
  * param {string} qs - query string
- * param {string} qfs - available query fields
  * return {object} queries - array of query objects
  */
-exports.queries = function (qs, qfs) {
-    var arr = {};
+exports.queries = function (qs) {
+    var queries = {};
     qs.split(/\s+/).forEach(function (q) {
         if (q === '') { return; }
         var colonIndex = q.indexOf(':');
         // default to search in all available fields
         if (colonIndex <= 0) {
-            exports.pushInObject(q, 'all', arr);
+            exports.pushInObject(q, 'all', queries);
             return;
         }
 
-        var field = q.slice(0,colonIndex),
+        var field = q.slice(0,colonIndex).toLowerCase(),
             content = q.slice(colonIndex +1);
 
         // search  is empty
         if (content === '') { return; }
 
-        switch(field.toLowerCase()) {
-            case 'title':
-            case 't':
-                exports.pushInObject(content, 'title', arr);
-                break;
-            case 'group':
-            case 'g':
-                exports.pushInObject(content, 'group', arr);
-                break;
-            case 'path':
-            case 'p':
-                exports.pushInObject(content, 'path', arr);
-                break;
-            case 'url':
-            case 'l':
-                exports.pushInObject(content, 'url', arr);
-                break;
-            case 'user':
-            case 'username':
-            case 'u':
-                exports.pushInObject(content, 'user', arr);
-                break;
-            case 'notes':
-            case 'note':
-            case 'n':
-                exports.pushInObject(content, 'notes', arr);
-                break;
+        if (field in exports.query_fields) {
+            exports.pushInObject(content, exports.query_fields[field], queries)
         }
     });
 
-    return arr;
+    return queries;
 }
 
 //  Response generator
@@ -128,7 +115,7 @@ exports.replace = function replace(o, m, r)
 {
     for (var key in o)
     {
-        if (exports.has.call(o, key) && o[key])
+        if (exports.has(o, key) && o[key])
         {
             if (typeof o[key] === 'object')
             {
@@ -153,17 +140,13 @@ exports.replace = function replace(o, m, r)
  */
 exports.merge = function merge(a, b)
 {
-    for (var key in b)
-    {
-        if (exports.has.call(b, key) && typeof b[key] !== 'undefined')
-        {
-            if ('object' === typeof b[key])
-            {
-                if ('undefined' === typeof a[key]) { a[key] = {}; }
+    for (var key in b) {
+        if (exports.has(b, key) && exports.isDefined(b[key])) {
+            if ('object' === typeof b[key] && !exports.isArray(b[key])) {
+                if (!exports.isDefined(a[key])) { a[key] = {}; }
                 exports.merge(a[key], b[key]);
             }
-            else
-            {
+            else {
                 a[key] = b[key];
             }
         }
@@ -171,20 +154,24 @@ exports.merge = function merge(a, b)
     return a;
 }
 
-/*
- * isArray()
+/**
+ *  Full `a` with `b`
  */
-exports.is_array = function is_array(o)
-{
-    return Object.prototype.toString.call(o) === '[object Array]';
+exports.full = function full(a, b) {
+    for (var key in b) {
+        if (!exports.has(a, key) && exports.has(b, key) && exports.isDefined(b[key])) {
+            a[key] = b[key];
+        }
+    }
+    return a;
 }
 
 /**
  * push item into array(may not exist) in an object
  */
 exports.pushInObject = function pushInObject(item, arr, object) {
-    if (!exports.has.call(object, arr)) { object[arr] = []; }
-    if (!exports.is_array(object[arr])) { return false; }
+    if (!exports.has(object, arr)) { object[arr] = []; }
+    if (!exports.isArray(object[arr])) { return false; }
     object[arr].push(item);
     return true;
 }
@@ -248,8 +235,8 @@ exports.home = function() {
 // Check if variable(s) is defined.
 exports.isDefined = function (vars) {
     if (typeof vars === 'undefined') { return false; }
-    if (Array.isArray(vars)) {
-        return vars.every(function (v) { return typeof(v) !== 'undefined'; });
+    if (exports.isArray(vars)) {
+        return vars.every(function (v) { return exports.isDefined(v); });
     }
     return true;
 }
@@ -284,3 +271,22 @@ exports.has = function (obj, props) {
 exports.empty = function (obj) {
     return (exports.isArray(obj)) ? obj.length == 0 : Object.keys(obj).length == 0;
 }
+
+
+// URL encode/decode, compatiable with PHP urlencode()/urldecode()
+exports.urlencode = function (str) {
+    return encodeURIComponent((str+'').toString())
+            .replace(/!/g, '%21')
+            .replace(/'/g, '%27')
+            .replace(/\(/g, '%28')
+            .replace(/\)/g, '%29')
+            .replace(/\*/g, '%2A')
+            .replace(/%20/g, '+');
+}
+
+exports.urldecode = function (str) {
+    return decodeURIComponent((str + '')
+            .replace(/%(?![\da-f]{2})/gi, function() { return '%25'; })
+            .replace(/\+/g, '%20'));
+}
+

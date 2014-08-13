@@ -8,6 +8,9 @@ module.exports = {
     DB_FILE_NOT_EXIST         : "db file doesn't exist",
     DB_INVALID_SETTINGS       : "db settings error",
     DB_FILE_READ_ERROR        : "db read error",
+    DB_CACHE_NOT_EXIST        : "db cache doesn't exist",
+    DB_CACHE_UDPATE_ERROR     : "db cache update failed",
+    DB_CONFIG_NOT_EXIST       : "db config doesn't exist",
 
     // cache errors
     CACHE_NOT_EXIST           : "cache doesn't exist",
@@ -18,6 +21,7 @@ module.exports = {
     SEARCH_ERROR              : "search unknown error",
 
     // getters errors
+    GET_ENTRY_NOT_EXIST       : "get entry doesn't exist",
     GET_PASSWORD_ERROR        : "get password failed",
 
     // pm2 errors

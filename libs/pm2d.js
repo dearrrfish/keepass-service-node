@@ -5,7 +5,7 @@ var pm2 = require('pm2'),
     q = require('q'),
     utils = require('./utils');
 
-module.exports = Pm2d;
+module.exports = Pm2d.prototype;
 
 function Pm2d ()
 {
@@ -196,7 +196,7 @@ Pm2d.prototype.list = function () {
  */
 Pm2d.prototype.kill = function() {
     var deferred = q.defer();
-    pm2.kill(function (err) {
+    pm2.killDaemon(function (err) {
         if (err) {
             deferred.reject(utils.res(false, ['PM2_KILL_ERROR', err]));
         }

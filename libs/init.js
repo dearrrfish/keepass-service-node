@@ -9,8 +9,7 @@ var express      = require('express'),
     favicon      = require('static-favicon'),
     cookieParser = require('cookie-parser'),
     bodyParser   = require('body-parser'),
-    Cache        = require('./modules/cache'),
-    utils        = require('./modules/utils');
+    utils        = require('./utils');
 
 var config   = {};  // Default config object
 
@@ -27,12 +26,12 @@ module.exports = init;
 function init(app)
 {
     // default settings
-    var config = require('./config/default.json');
+    var config = require('../config/default.json');
 
     // try to fetch user preferences
     try
     {
-        var user_config = require('./config/user.json');
+        var user_config = require('../config/user.json');
         log('Loaded user settings from user.json %j', user_config);
     }
     catch (err)
@@ -47,24 +46,16 @@ function init(app)
 
     // save settings in app
     app.set('config', config);
-
+    log(JSON.stringify(config));
     // app configurations
     app.set('port', config.app.port);
 
     app.set('env', config.app.env);
 
     log(app.get('config'));
-    // cache setup
-    var cache = Cache(app);
-    cache.update().then(function (res) {
-        app.set('cache', cache);
-        log('cache initialized.');
-    }, function (res) {
-        log(res.errors[0].message);
-    });
 
     // view engine setup
-    app.set('views', path.join(__dirname, 'views'));
+    app.set('views', path.join(__dirname, '../views'));
     app.set('view engine', 'jade');
 
     app.use(favicon());
@@ -73,5 +64,14 @@ function init(app)
     app.use(bodyParser.urlencoded());
     app.use(cookieParser());
     app.use(express.static(path.join(__dirname, 'public')));
+
+    /*
+     * Routes setups
+     */
+    // api routes
+    var api = require('../routes/api')(app);
+
+    // apply routes
+    app.use('/api', api);
 
 }

@@ -3,7 +3,7 @@
  * Module Depedencies
  */
 var express = require('express'),
-    init = require('./init');
+    utils = require('./libs/utils');
 
 
 /*
@@ -12,16 +12,7 @@ var express = require('express'),
 // express app object
 var app = express();
 // initialize app settings
-init(app);
-
-/*
- * Routes setups
- */
-// api routes
-var api = require('./api/index')(app);
-
-// apply routes
-app.use('/api', api);
+require('./libs/init')(app);
 
 /*
  * Error handlers

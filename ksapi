@@ -1,0 +1,64 @@
+#!/usr/bin/env node
+// vim: ft=javascript
+
+args = process.argv.slice(2);
+var arg = (args.length == 0) ? "start" : args[0];
+console.log(arg);
+var pm2d = require('./libs/pm2d');
+
+switch(arg) {
+    case 'start':
+        console.log('satrting');
+        start(); break;
+    //case 'reload':
+        //reload(); break;
+    //case 'kill':
+        //kill();break;
+    //case 'list':
+        //list();break;
+    //case 'desc':
+        //describe(args[1]);break;
+    case 'exit':
+    case 'kill':
+        kill(); break;
+}
+
+function start() {
+    app = {
+        script: "./bin/www",
+        options: {
+            name: "ksapi",
+            executeCommand: true
+        }
+    };
+    pm2d.connect().then(function (res) {
+        console.log('KSAPI: connected to PM2 daemon, preparing to start application');
+        return pm2d.start(app);
+    }).then(function (res) {
+        console.log('KSAPI: server instance started');
+    }).fin(function (res) {
+        console.log('KSAPI: disconnecting from PM2 daemon');
+        return pm2d.disconnect().fin(exit);
+    });
+}
+
+function kill() {
+    pm2d.connect().then(function (res) {
+        console.log('KSAPI: connected to PM2 daemon, preparing to terminate');
+        return pm2d.kill();
+    }).then(function (res) {
+        console.log('KSAPI: PM2 datemon terminated');
+    }, function (res) {
+        console.log(JSON.stringify(res));
+        console.log('KSAPI: failed to terminate PM2 daemon, disconnecting');
+        return pm2d.disconnect();
+    }).fin(exit);
+}
+
+
+
+function exit(n) {
+    console.log('KSAPI: exit process');
+    if (typeof n === 'undefined') { n = 0; }
+    return process.exit(n);
+}
