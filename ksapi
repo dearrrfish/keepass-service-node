@@ -36,6 +36,12 @@ function start() {
         return pm2d.start(app);
     }).then(function (res) {
         console.log('KSAPI: server instance started');
+    }, function (res) {
+        err_msg = 'KSAPI: failed to start server instance, error: ["'+ res.error +'"]';
+        if (res.extra) {
+            err_msg += ', details: ' + JSON.stringify(res.extra);
+        }
+        console.log(err_msg);
     }).fin(function (res) {
         console.log('KSAPI: disconnecting from PM2 daemon');
         return pm2d.disconnect().fin(exit);
